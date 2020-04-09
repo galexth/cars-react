@@ -16,7 +16,7 @@ export default (props) => {
                 <input type="text" className="form-control" name="x" id="x" defaultValue="0" />
                 <input type="text" className="form-control" name="y" id="y" defaultValue="0" />
                 <select className="custom-select" name="direction">
-                    <option defaultValue="north">North</option>
+                    <option defaultValue="north" value="north">North</option>
                     <option value="east">East</option>
                     <option value="south">South</option>
                     <option value="west">West</option>
