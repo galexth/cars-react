@@ -48,7 +48,7 @@ const calculateTransform = (el, pos) => {
     newCarPosition.bottom = (height * (pos.y + 1)) - (height / 2) - carWidth / 2;
 
     return newCarPosition;
-}
+};
 
 class Layout extends React.Component {
     constructor(props) {
@@ -56,13 +56,14 @@ class Layout extends React.Component {
 
         this.gridRef = createRef();
 
-        this.state = { 
+        this.state = {
             position: null,
             transform: null,
             isReady: false,
             log: [],
          };
 
+        this.place = this.place.bind(this);
         this.move = this.move.bind(this);
         this.reset = this.reset.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -89,11 +90,11 @@ class Layout extends React.Component {
     }
 
     turn(dir) {
-        if (!this.state.isReady) {
+        if (! this.state.isReady) {
             NotificationManager.error(MESSAGE.carIsNotReady);
             return false
         }
-        
+
         api[dir]().then(({ data }) => {
             this.setState((prevState) => ({
                 position: data,
@@ -104,7 +105,7 @@ class Layout extends React.Component {
     }
 
     move() {
-        if (!this.state.isReady) {
+        if (! this.state.isReady) {
             NotificationManager.error(MESSAGE.carIsNotReady);
             return false
         }
@@ -119,7 +120,7 @@ class Layout extends React.Component {
     }
 
     reset() {
-        if (!this.state.isReady) {
+        if (! this.state.isReady) {
             NotificationManager.error(MESSAGE.carIsNotReady);
             return false
         }
@@ -158,7 +159,7 @@ class Layout extends React.Component {
     componentDidMount(){
         api.init().then(({ data }) => {
             if (data) {
-                this.setState((prevState) => ({ 
+                this.setState((prevState) => ({
                     position: data,
                     transform: calculateTransform(this.gridRef, data),
                     log: [data, ...prevState.log],
@@ -166,9 +167,9 @@ class Layout extends React.Component {
                 }));
             }
 
-            document.addEventListener('keydown', e => this.onKeyDown(e));
-            window.addEventListener('resize', e => this.onWindowResize(e));
-        });
+            document.addEventListener('keydown', this.onKeyDown);
+            window.addEventListener('resize', this.onWindowResize);
+        }).catch(err => NotificationManager.error(err.response ? err.response.data.error : err.message));
     }
 
     render() {
@@ -182,19 +183,19 @@ class Layout extends React.Component {
                     </GridWrapper>
                 </div>
                 <div className="controls col-sm-auto">
-                    <Form onSubmit={(e) => this.place(e)} />
+                    <Form onSubmit={this.place} />
                     <div className="btn-group" role="group">
-                        <button disabled={!this.state.isReady} type="button" onClick={() => this.turn('left')} className="btn btn-primary">&#8592;</button>
-                        <button disabled={!this.state.isReady} type="button" onClick={() => this.turn('right')} className="btn btn-primary">&#8594;</button>
-                        <button disabled={!this.state.isReady} type="button" onClick={() => this.move()} className="btn btn-primary">&#8593;</button>
-                        <button disabled={!this.state.isReady} type="button" onClick={() => this.reset()} className="btn btn-danger">Reset</button>
+                        <button disabled={! this.state.isReady} type="button" onClick={() => this.turn('left')} className="btn btn-primary">&#8592;</button>
+                        <button disabled={! this.state.isReady} type="button" onClick={() => this.turn('right')} className="btn btn-primary">&#8594;</button>
+                        <button disabled={! this.state.isReady} type="button" onClick={this.move} className="btn btn-primary">&#8593;</button>
+                        <button disabled={! this.state.isReady} type="button" onClick={this.reset} className="btn btn-danger">Reset</button>
                     </div>
                     <Log log={this.state.log} />
                 </div>
             </Container>
         );
     }
-    
+
 }
 
 export default Layout;

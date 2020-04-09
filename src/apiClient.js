@@ -5,21 +5,21 @@ axios.defaults.withCredentials = true;
 
 export default {
     init() {
-        return axios.get(HOST + '/car');
+        return axios.get(`${HOST}/car`);
     },
     reset() {
-        return axios.delete(HOST + '/car');
+        return axios.delete(`${HOST}/car`);
     },
     place(position) {
-        return axios.post(HOST+'/car/place', position);
+        return axios.post(`${HOST}/car/place`, position);
     },
     left() {
-        return axios.put(HOST+'/car/left');
+        return axios.put(`${HOST}/car/left`);
     },
     right() {
-        return axios.put(HOST+'/car/right');
+        return axios.put(`${HOST}/car/right`);
     },
     move() {
-        return axios.put(HOST+'/car/move');
+        return axios.put(`${HOST}/car/move`);
     },
 };

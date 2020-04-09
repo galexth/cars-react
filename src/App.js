@@ -2,7 +2,6 @@ import React from 'react';
 import { NotificationContainer } from 'react-notifications';
 import styled from 'styled-components';
 
-import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-notifications/lib/notifications.css';
 import Layout from './components/Layout';
