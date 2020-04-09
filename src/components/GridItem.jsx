@@ -10,4 +10,4 @@ const GridItem = styled.span`
     }
 `;
 
-export default (props) => (<GridItem {...props}/>)
+export default () => (<GridItem/>)

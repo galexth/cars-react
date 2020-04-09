@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "react-app",
+    "airbnb",
+    "plugin:jsx-a11y/recommended",
+    "prettier",
+    "prettier/react"
+  ],
+  "rules": {
+    "react/destructuring-assignment": "off",
+    "react/prop-types": "off",
+    "no-plusplus": "off"
+  }
+}

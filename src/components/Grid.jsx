@@ -17,9 +17,10 @@ const Grid = styled.div`
     }
 `;
 
-let grids = [];
+const grids = [];
+const gridItems = 5 * 5;
 
-for (let i = 0; i < 5 * 5; i++) grids.push(<GridItem key={i} />);
+for (let i = 0; i < gridItems; i++) grids.push(<GridItem key={i} />);
 
 export default (props) => {
     return (

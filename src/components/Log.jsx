@@ -15,10 +15,10 @@ export default (props) => {
     return (
         <Log>
             {
-                props.log.map((item, index) => (
-                    <li key={index}>{`${item.x} : ${item.y} ${item.direction}`}</li>
+                props.log.map((item) => (
+                    <li>{`${item.x} : ${item.y} ${item.direction}`}</li>
                 ))
             }
-        </Log> 
+        </Log>
     );
 }

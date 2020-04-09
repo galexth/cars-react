@@ -1,7 +1,7 @@
 import React, { createRef } from 'react';
 import styled from 'styled-components';
-import api from '../apiClient';
 import { NotificationManager } from 'react-notifications';
+import api from '../apiClient';
 import Car from './Car';
 import Grid from './Grid';
 import Form from './Form';
@@ -59,7 +59,6 @@ class Layout extends React.Component {
         this.state = {
             position: null,
             transform: null,
-            isReady: false,
             log: [],
          };
 
@@ -70,69 +69,27 @@ class Layout extends React.Component {
         this.onWindowResize = this.onWindowResize.bind(this);
     }
 
-    place(e) {
-        e.preventDefault();
+    componentDidMount(){
+        api.init().then(({ data }) => {
+            if (data) {
+                this.setState((prevState) => ({
+                    position: data,
+                    transform: calculateTransform(this.gridRef, data),
+                    log: [data, ...prevState.log],
+                }));
+            }
 
-        api.place({
-            x: parseInt(e.target.x.value),
-            y: parseInt(e.target.y.value),
-            direction: e.target.direction.value,
-        }).then(({data}) => {
-            this.setState((prevState) => ({
-                position: data,
-                transform: calculateTransform(this.gridRef, data),
-                log: [data, ...prevState.log],
-                isReady: true
-            }));
+            document.addEventListener('keydown', this.onKeyDown);
+            window.addEventListener('resize', this.onWindowResize);
         }).catch(err => NotificationManager.error(err.response ? err.response.data.error : err.message));
-
-        return false;
     }
 
-    turn(dir) {
-        if (! this.state.isReady) {
-            NotificationManager.error(MESSAGE.carIsNotReady);
-            return false
+    onWindowResize() {
+        const {position} = this.state;
+
+        if (position) {
+            this.setState({ transform: calculateTransform(this.gridRef, position) });
         }
-
-        api[dir]().then(({ data }) => {
-            this.setState((prevState) => ({
-                position: data,
-                transform: calculateTransform(this.gridRef, data),
-                log: [data, ...prevState.log],
-            }));
-        });
-    }
-
-    move() {
-        if (! this.state.isReady) {
-            NotificationManager.error(MESSAGE.carIsNotReady);
-            return false
-        }
-
-        api.move().then(({ data }) => {
-            this.setState((prevState) => ({
-                position: data,
-                transform: calculateTransform(this.gridRef, data),
-                log: [data, ...prevState.log],
-            }));
-        });
-    }
-
-    reset() {
-        if (! this.state.isReady) {
-            NotificationManager.error(MESSAGE.carIsNotReady);
-            return false
-        }
-
-        api.reset().then(response => {
-            this.setState({
-                position: null,
-                transform: null,
-                isReady: false,
-                log: [],
-            });
-        });
     }
 
     onKeyDown(e) {
@@ -146,51 +103,94 @@ class Layout extends React.Component {
             case 'ArrowRight':
                 e.preventDefault();
                 return this.turn('right');
-            default: return;
+            default: return false;
         }
     }
 
-    onWindowResize(e) {
-        if (this.state.position) {
-            this.setState({ transform: calculateTransform(this.gridRef, this.state.position) });
+    reset() {
+        if (! this.state.position) {
+            NotificationManager.error(MESSAGE.carIsNotReady);
+            return;
         }
+
+        api.reset().then(() => {
+            this.setState({
+                position: null,
+                transform: null,
+                log: [],
+            });
+        });
     }
 
-    componentDidMount(){
-        api.init().then(({ data }) => {
-            if (data) {
-                this.setState((prevState) => ({
-                    position: data,
-                    transform: calculateTransform(this.gridRef, data),
-                    log: [data, ...prevState.log],
-                    isReady: true,
-                }));
-            }
+    turn(dir) {
+        if (! this.state.position) {
+            NotificationManager.error(MESSAGE.carIsNotReady);
+            return;
+        }
 
-            document.addEventListener('keydown', this.onKeyDown);
-            window.addEventListener('resize', this.onWindowResize);
+        api[dir]().then(({ data }) => {
+            this.setState((prevState) => ({
+                position: data,
+                transform: calculateTransform(this.gridRef, data),
+                log: [data, ...prevState.log],
+            }));
+        });
+    }
+
+    move() {
+        if (! this.state.position) {
+            NotificationManager.error(MESSAGE.carIsNotReady);
+            return;
+        }
+
+        api.move().then(({ data }) => {
+            this.setState((prevState) => ({
+                position: data,
+                transform: calculateTransform(this.gridRef, data),
+                log: [data, ...prevState.log],
+            }));
+        });
+    }
+
+    place(e) {
+        e.preventDefault();
+
+        api.place({
+            x: parseInt(e.target.x.value, 10),
+            y: parseInt(e.target.y.value, 10),
+            direction: e.target.direction.value,
+        }).then(({data}) => {
+            this.setState((prevState) => ({
+                position: data,
+                transform: calculateTransform(this.gridRef, data),
+                log: [data, ...prevState.log],
+            }));
         }).catch(err => NotificationManager.error(err.response ? err.response.data.error : err.message));
+
+        return false;
     }
 
     render() {
+        const { position, transform, log } = this.state;
+
         return (
             <Container className="row justify-content-sm-center">
                 <div className="col col-lg-6">
-                    <h2>Current position: {this.state.position ? `${this.state.position.x} : ${this.state.position.y} ${this.state.position.direction}` : 'place the car'}</h2>
+                    <h2>Current position: {position ? `${position.x} : ${position.y} ${position.direction}` : 'place the car'}</h2>
                     <GridWrapper>
                         <Grid innerRef={this.gridRef} />
-                        {this.state.isReady ? <Car width={carWidth} transform={this.state.transform} /> : null}
+                        {transform ? <Car width={carWidth} transform={transform} /> : null}
                     </GridWrapper>
                 </div>
                 <div className="controls col-sm-auto">
                     <Form onSubmit={this.place} />
                     <div className="btn-group" role="group">
-                        <button disabled={! this.state.isReady} type="button" onClick={() => this.turn('left')} className="btn btn-primary">&#8592;</button>
-                        <button disabled={! this.state.isReady} type="button" onClick={() => this.turn('right')} className="btn btn-primary">&#8594;</button>
-                        <button disabled={! this.state.isReady} type="button" onClick={this.move} className="btn btn-primary">&#8593;</button>
-                        <button disabled={! this.state.isReady} type="button" onClick={this.reset} className="btn btn-danger">Reset</button>
+                        <button disabled={! position} type="button" onClick={() => this.turn('left')} className="btn btn-primary">&#8592;</button>
+                        <button disabled={! position} type="button" onClick={() => this.turn('right')} className="btn btn-primary">&#8594;</button>
+                        <button disabled={! position} type="button" onClick={this.move} className="btn btn-primary">&#8593;</button>
+                        <button disabled={! position} type="button" onClick={this.reset} className="btn btn-danger">Reset</button>
                     </div>
-                    <Log log={this.state.log} />
+                    <Log log={log} />
                 </div>
             </Container>
         );
