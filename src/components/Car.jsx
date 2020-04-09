@@ -1,6 +1,6 @@
 import React from 'react';
-import car from '../car.png';
 import styled from 'styled-components';
+import car from '../car.png';
 
 const CarImage = styled.img`
     transform: ${props => props.transform};

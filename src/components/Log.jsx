@@ -11,11 +11,11 @@ const Log = styled.ul`
     overflow: scroll;
 `;
 
-export default (props) => {
+export default ({log}) => {
     return (
         <Log>
             {
-                props.log.map((item) => (
+                log.map((item) => (
                     <li>{`${item.x} : ${item.y} ${item.direction}`}</li>
                 ))
             }

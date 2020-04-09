@@ -22,9 +22,9 @@ const gridItems = 5 * 5;
 
 for (let i = 0; i < gridItems; i++) grids.push(<GridItem key={i} />);
 
-export default (props) => {
+export default ({innerRef}) => {
     return (
-        <Grid ref={props.innerRef}>
+        <Grid ref={innerRef}>
             {grids}
         </Grid>
     );
