@@ -16,13 +16,13 @@ export default (props) => {
                 <input type="text" className="form-control" name="x" id="x" defaultValue="0" />
                 <input type="text" className="form-control" name="y" id="y" defaultValue="0" />
                 <select className="custom-select" name="direction">
-                    <option defaultValue="north">north</option>
-                    <option value="east">east</option>
-                    <option value="south">south</option>
-                    <option value="west">west</option>
+                    <option defaultValue="north">North</option>
+                    <option value="east">East</option>
+                    <option value="south">South</option>
+                    <option value="west">West</option>
                 </select>
             </div>
-            <button type="submit" className="btn btn-success">Submit</button>
+            <button type="submit" className="btn btn-success">Place</button>
         </Form>
     );
 }

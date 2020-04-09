@@ -14,39 +14,47 @@ const GridWrapper = styled.div`
     position: relative;
 `;
 
+const Log = styled.ul`
+    width: 100%;
+    max-height: 300px;
+    border: 1px solid rgba(0,0,0,0.1);
+    text-decoration: none;
+    margin-top: 15px;
+    padding: 10px;
+    overflow: scroll;
+`;
+
 export default () => {
 
     const [isReady, setIsReady] = useState(false);
-    const [position, setPosition] = useState({});
-    const [transform, setTransform] = useState({
-        rotate: 0,
-        left: 0,
-        bottom: 0,
-    })
+    const [position, setPosition] = useState(null);
+    const [transform, setTransform] = useState(null);
+    const [log, setLog] = useState([]);
+    
     const gridRef = useRef(null);
     const carWidth = 50;
 
-    const turn = (dir) => {
+    function turn(dir) {
         if (!isReady) {
             NotificationManager.error('Place the car first.');
             return false
         }
         api[dir]().then(response => {
             setPosition(response.data);
-            setTransform(calculatePosition(response.data));
+            setLog([...log, response.data]);
+            setTransform(calculateTransform(response.data));
         });
     };
 
-    const move = () => {
+    function move() {
         if (!isReady) {
             NotificationManager.error('Place the car first.');
             return false
         }
         api.move().then(response => {
             setPosition(response.data);
-            const pos = calculatePosition(response.data);
-
-            setTransform(pos);
+            setLog([...log, response.data]);
+            setTransform(calculateTransform(response.data));
         });
     };
 
@@ -56,13 +64,14 @@ export default () => {
             return false
         }
         api.reset().then(response => {
-            setPosition({});
-            setTransform({});
+            setLog([]);
             setIsReady(false);
+            setPosition(null);
+            setTransform(null);
         });
     };
 
-    const onDown = React.useCallback((e) => {
+    function onDown (e) {
         switch (e.code) {
             case 'ArrowUp': 
                 e.preventDefault();
@@ -75,18 +84,21 @@ export default () => {
                 return turn('right');
             default: return;
         }
-    }, [move, turn]);
+    };
 
-    const onResize = React.useCallback((e) => {
-        console.log(position);
-        setTransform(calculatePosition(position));
-    }, [position]);
+    function onResize(e) {
+        if (position) {
+            setTransform(calculateTransform(position));
+        }
+    };
 
     useEffect(() => {
         api.init().then(response => {
+
             if (response.data) {
                 setPosition(response.data);
-                setTransform(calculatePosition(response.data));
+                setLog([...log, response.data]);
+                setTransform(calculateTransform(response.data));
                 setIsReady(true)
             }
             
@@ -101,9 +113,9 @@ export default () => {
             document.removeEventListener("keydown", onDown);
             window.removeEventListener("resize", onResize);
         }
-    }, [onDown, onResize]);
+    });
 
-    const calculatePosition = (pos) => {
+    const calculateTransform = (pos) => {
         const newCarPosition = { ...transform};
         switch (pos.direction) {
             case 'north': 
@@ -138,8 +150,9 @@ export default () => {
             y: parseInt(e.target.y.value),
             direction: e.target.direction.value,
         }).then(response => {
+            setLog([...log, response.data]);
             setPosition(response.data);
-            setTransform(calculatePosition(response.data));
+            setTransform(calculateTransform(response.data));
             setIsReady(true)
         }).catch(err => {
             NotificationManager.error(err.response ? err.response.data.error : err.message);
@@ -151,10 +164,10 @@ export default () => {
     return (
         <Container className="row justify-content-sm-center">
             <div className="col col-lg-6">
-                <h2>{position.x}:{position.y} {position.direction}</h2>
+                <h2>Current position: {position ? `${position.x} : ${position.y} ${position.direction}` : 'place the car'}</h2>
                 <GridWrapper>
                     <Grid innerRef={gridRef} />
-                    <Car width={carWidth} transform={transform} />
+                    {isReady ? <Car width={carWidth} transform={transform} /> : null}
                 </GridWrapper>
             </div>
             <div className="controls col-sm-auto">
@@ -165,6 +178,9 @@ export default () => {
                     <button disabled={!isReady} type="button" onClick={move} className="btn btn-primary">&#8593;</button>
                     <button disabled={! isReady} type="button" onClick={reset} className="btn btn-danger">Reset</button>
                 </div>
+                <Log>
+                    {log.map((item, index) => (<li key={index}>{`${item.x} : ${item.y} ${item.direction}`}</li>))}
+                </Log> 
             </div>
         </Container>
     );
